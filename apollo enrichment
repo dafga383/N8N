@@ -1,0 +1,3297 @@
+{
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f6f7812d-1503-4c02-9ed5-80b20e99fc69",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -11840,
+        15296
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Companies",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "0acef691-a636-40dc-a899-4cf8ed364f9f",
+      "name": "Google Sheets Trigger2",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "position": [
+        -11600,
+        16144
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "9RJNCJEeis90cQLW",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.apollo.io/api/v1/organizations/enrich",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "=  {{ $json.Website.extractDomain().replace(/^www\\./, '') }}\n"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "options": {}
+      },
+      "id": "5314a78c-f910-4604-81da-a2a03422ec8d",
+      "name": "Apollo Organization Enrichment2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -9728,
+        16128
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseUrl = 'https://api.apollo.io/api/v1/mixed_people/search';\nconst titles = [\n  'Head of Data',\n  'Chief Data Officer',\n  'Data Architect',\n  'Data Governance Lead',\n  'Head of Data & Analytics',\n  'Enterprise Data Architect',\n  'Data Management Specialist',\n  'Data Platform Lead',\n  'Data Strategy Director',\n  'CTO',\n  'CIO',\n  'Head of IT'\n];\nconst titleParams = titles.map(t => `person_titles[]=${encodeURIComponent(t)}`).join('&');\nconst domains = $input.all().map(item => item.json.Domain);\nconst domainParams = domains.map(d => `q_organization_domains_list[]=${encodeURIComponent(d)}`).join('&');\nconst perPageParam = 'per_page=40';\nconst fullUrl = `${baseUrl}?${titleParams}&${domainParams}&${perPageParam}`;\nreturn [{ json: { url: fullUrl } }];\n"
+      },
+      "id": "e931cbfb-5213-4559-a9ba-d6963998e453",
+      "name": "Create Apollo People Search URL2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -8480,
+        16096
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "options": {}
+      },
+      "id": "016f8047-43d2-48bf-90fa-813c4a23807c",
+      "name": "Apollo Find Decision Makers2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -8192,
+        16256
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 404191424,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=404191424",
+          "cachedResultName": "Contacts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "City": "={{ $('Validate Job Title1').item.json.city }}",
+            "Name": "={{ $('Validate Job Title1').item.json.name }}",
+            "State": "={{ $('Validate Job Title1').item.json.state }}",
+            "Company": "={{ $('Validate Job Title1').item.json.organization.name }}",
+            "Country": "={{ $('Validate Job Title1').item.json.country }}",
+            "Job Title": "={{ $('Validate Job Title1').item.json.title }}",
+            "Date Added": "={{ $now.toUTC().toFormat('yyyy-MM-dd') }}\n",
+            "Start Date": "={{ $('Validate Job Title1').item.json.employment_history[0].start_date }}",
+            "Company Domain": "={{ $('Validate Job Title1').item.json.organization.primary_domain }}",
+            "LinkedIn Profile URL": "={{ $('Validate Job Title1').item.json.linkedin_url }}",
+            "GPT Department Classification": "={{ $('AI Department Classification1').item.json.message.content }}",
+            "Lead Score": "={{ $json.content[0].text }}"
+          },
+          "matchingColumns": [
+            "LinkedIn Profile URL"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Job Title",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Start Date",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Start Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GPT Department Classification",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "GPT Department Classification",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn Profile URL",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "LinkedIn Profile URL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Domain",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "City",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "State",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Country",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Country",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email Address",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Verified",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email Verified",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Added",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Date Added",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Contacted Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Last Contacted Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Status",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Lead Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-Up Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Follow-Up Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Lead Score",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "45af4f61-89a3-4875-8e43-57e373c6fef8",
+      "name": "Add Contacts2",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -7504,
+        15520
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/bulk_match?reveal_personal_emails=false&reveal_phone_number=false",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "e7defd1a-828b-4a8c-82ba-64db00323284",
+      "name": "Apollo Enrich Decision Makers2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -5248,
+        16000
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const details = $input.all().map(item => ({\n  linkedin_url: item.json['LinkedIn Profile URL'],\n  domain: item.json['Company Domain']\n}));\n\nreturn [{ json: { details } }];\n"
+      },
+      "id": "9c2f76fa-3394-4640-affa-37712bf5d941",
+      "name": "Create Apollo People Enrichment Payload2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -5456,
+        15920
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 404191424,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KqKFZ7Uxrt1MivBjLklGdPRMgNBhEc0slpthoSjt2wI/edit#gid=404191424",
+          "cachedResultName": "Contacts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Job Title": "={{ $json.title }}",
+            "Start Date": "=",
+            "Email Address": "={{ $json.email }}",
+            "Email Verified": "={{ $json.email_status === 'verified' ? 'Yes' : 'No' }}\n",
+            "LinkedIn Profile URL": "={{ $json.linkedin_url }}",
+            "Country": "={{ $json.country }}",
+            "City": "={{ $json.city }}",
+            "State": "={{ $json.state }}",
+            "Lead Status": "=pending"
+          },
+          "matchingColumns": [
+            "LinkedIn Profile URL"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Job Title",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Company",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Start Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Start Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GPT Department Classification",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "GPT Department Classification",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LinkedIn Profile URL",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "LinkedIn Profile URL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Domain",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Company Domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "City",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "State",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Country",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Country",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Email Address",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Verified",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email Verified",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Added",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Date Added",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Contacted Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Last Contacted Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Status",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Lead Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-Up Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Follow-Up Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "4e4d48db-9683-4bcd-b4be-9422db1b1451",
+      "name": "Enrich Contacts2",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -5248,
+        15728
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "e909df23-0743-471a-a82a-7fbe5b767a91",
+      "name": "Loop Over Items For Bulk Enrichment (10 per batch)2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -5824,
+        15968
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/mixed_companies/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q_organization_name",
+              "value": "={{ $json['Company Name'] }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "options": {}
+      },
+      "id": "f95ef1b3-f767-4066-bd13-ecf67c5cf0f7",
+      "name": "Apollo Organization Search2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -10608,
+        15968
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=0",
+          "cachedResultName": "Companies"
+        },
+        "columns": {
+          "value": {
+            "Phone": "=",
+            "Domain": "={{ $json.organizations[0].primary_domain }}",
+            "Twitter": "=",
+            "Website": "={{ $json.organizations[0].website_url }}",
+            "Facebook": "=",
+            "Industry": "=",
+            "LinkedIn": "=",
+            "Revenue ($)": "=",
+            "Company Name": "={{ $json.organizations[0].name }}",
+            "Founded Year": "=",
+            "Headquarters": "=",
+            "Total Funding": "=",
+            "Company Description": "=",
+            "Latest Funding Stage": "=",
+            "Company Size (Employees)": "=",
+            "Lastest Funding Round Date": "="
+          },
+          "schema": [
+            {
+              "id": "Company Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Website",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Domain",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "LinkedIn",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Twitter",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Twitter",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Facebook",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Facebook",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Phone",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Industry",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Size (Employees)",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Size (Employees)",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Headquarters",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Headquarters",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Founded Year",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Founded Year",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Revenue ($)",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Revenue ($)",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Funding",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Total Funding",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Latest Funding Stage",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Latest Funding Stage",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lastest Funding Round Date",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Lastest Funding Round Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Description",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Company Description",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GPT Company Summary",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "GPT Company Summary",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Domain"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d0357865-bf08-4c5c-be74-f1a52dd5fcc4",
+      "name": "Add Company Website2",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -10400,
+        15968
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09GNDM3DFA",
+          "mode": "list",
+          "cachedResultName": "dw-n8n-snitcher-outreach-wf"
+        },
+        "message": "Please review the Companies tab of the spreadsheet (https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit?gid=0#gid=0) to verify that the correct domain names were retrieved. If needed, simply find and paste correct website URL of the company in the Website column (the Domain column will be populated automatically).",
+        "options": {}
+      },
+      "id": "1f318926-9b16-4865-a51b-38b3534edb18",
+      "name": "Approve Company Website2",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        -10080,
+        15920
+      ],
+      "webhookId": "830f75dd-f56e-4086-90ac-72ca14e226ce",
+      "typeVersion": 2.3,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "9OZDdXhnfY0Jj3n3",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gid=0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=0",
+          "cachedResultName": "Companies"
+        },
+        "columns": {
+          "value": {
+            "Phone": "={{ $json.organization.sanitized_phone ?? '' }}",
+            "Domain": "={{ $('Apollo Organization Enrichment2').item.json.organization.primary_domain }}",
+            "Status": "Processed",
+            "Twitter": "={{ $('Apollo Organization Enrichment2').item.json.organization.twitter_url }}",
+            "Website": "={{ $('Apollo Organization Enrichment2').item.json.organization.website_url }}",
+            "Facebook": "={{ $('Apollo Organization Enrichment2').item.json.organization.facebook_url }}",
+            "Industry": "={{ $('Apollo Organization Enrichment2').item.json.organization.industries.join(\", \") }}",
+            "LinkedIn": "={{ $('Apollo Organization Enrichment2').item.json.organization.linkedin_url }}",
+            "Revenue ($)": "={{ $('Apollo Organization Enrichment2').item.json.organization.annual_revenue ?? '' }}",
+            "Company Name": "={{ $('Apollo Organization Enrichment2').item.json.organization.name }}",
+            "Founded Year": "={{ $('Apollo Organization Enrichment2').item.json.organization.founded_year }}",
+            "Headquarters": "={{ $('Apollo Organization Enrichment2').item.json.organization.raw_address }}",
+            "Total Funding": "={{ $('Apollo Organization Enrichment2').item.json.organization.total_funding }}",
+            "Company Description": "={{ $('Apollo Organization Enrichment2').item.json.organization.short_description }}",
+            "GPT Company Summary": "={{ $json.message.content }}",
+            "Latest Funding Stage": "={{ $('Apollo Organization Enrichment2').item.json.organization.latest_funding_stage }}",
+            "Company Size (Employees)": "={{ $('Apollo Organization Enrichment2').item.json.organization.estimated_num_employees }}",
+            "Lastest Funding Round Date": "={{ \n  $('Apollo Organization Enrichment2').item.json.organization.latest_funding_round_date &&\n  DateTime.fromISO($('Apollo Organization Enrichment2').item.json.organization.latest_funding_round_date).isValid\n    ? DateTime.fromISO($('Apollo Organization Enrichment2').item.json.organization.latest_funding_round_date).toFormat('yyyy-MM-dd')\n    : ''\n}}"
+          },
+          "schema": [
+            {
+              "id": "Company Name",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Website",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Domain",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "LinkedIn",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Twitter",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Twitter",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Facebook",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Facebook",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Phone",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Industry",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Size (Employees)",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Size (Employees)",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Headquarters",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Headquarters",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Founded Year",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Founded Year",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Revenue ($)",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Revenue ($)",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Funding",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Total Funding",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Latest Funding Stage",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Latest Funding Stage",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lastest Funding Round Date",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Lastest Funding Round Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Description",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Company Description",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GPT Company Summary",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "GPT Company Summary",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "Domain"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c54748f3-ab08-4e1c-b4ec-0629b40428d5",
+      "name": "Add Company Details2",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -9136,
+        16128
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "785952c3-f58e-4d4e-b8c4-dea3ceb424b1",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              },
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Processed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "81d8a468-a0f3-4054-b053-e4c59ea01544",
+      "name": "Select Unprocessed Companies2",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -11056,
+        16128
+      ],
+      "notesInFlow": false,
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "9087ca17-f034-4c87-b2b7-4e611ed2bcf5",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Domain }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7b233fa3-9974-44ad-8f07-131c5d227b25",
+      "name": "Is Domain Already Provided?2",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -10832,
+        16128
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "people",
+        "options": {}
+      },
+      "id": "cc83b2fa-310d-4595-99f0-20d8ee5f66c6",
+      "name": "Split Out Batched Decision Maker Response2",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -8720,
+        15904
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "matches",
+        "options": {}
+      },
+      "id": "f1c9a5e5-fa64-4ff5-a90c-a2c5bf328f1e",
+      "name": "Split Out Batched Enrichment Response2",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -5456,
+        15728
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "1a2850aa-e4af-4746-acdd-101467cf375c",
+      "name": "Merge Rows Which Now All Contain Domains2",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        -9952,
+        16128
+      ],
+      "typeVersion": 3.1
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \nGiven the company description \"{{ $json[\"Company Description\"] }}\", summarize the company's core business in one line."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -9440,
+        15664
+      ],
+      "typeVersion": 1,
+      "id": "e7b43ffb-91ab-4f06-86bd-b1e5f08ef47b",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Given the company description \"{{ $json.organization.short_description }}\", summarize the company's core business in one line."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        -9472,
+        16208
+      ],
+      "id": "87d719c9-ece2-4228-88af-aa4ba23f1eb2",
+      "name": "Message a model4",
+      "credentials": {
+        "anthropicApi": {
+          "id": "asRQcBy4x1zPzz02",
+          "name": "Anthropic account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \nGiven the company description \"{{ $json.organization.short_description }}\", summarize the company's core business in one line."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -9472,
+        16400
+      ],
+      "typeVersion": 1,
+      "id": "97ec49b2-da80-4842-b350-59a81cf8f144",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Whitelist of allowed job titles\nconst allowedTitles = [\n  'Head of Data',\n  'Chief Data Officer',\n  'Data Architect',\n  'Data Governance Lead',\n  'Head of Data & Analytics',\n  'Enterprise Data Architect',\n  'Data Management Specialist',\n  'Data Platform Lead',\n  'Data Strategy Director',\n  'CTO',\n  'CIO',\n  'Head of IT'\n];\n\n// Get the current job title from Apollo response\nconst currentTitle = ($json.title || '').toLowerCase().trim();\n\n// Check if title contains any of the allowed keywords\nconst isValid = allowedTitles.some(title => \n  currentTitle.includes(title.toLowerCase())\n);\n\n// Return all data with validation flag\nreturn {\n  json: {\n    ...$json,\n    _is_valid: isValid\n  }\n};"
+      },
+      "id": "8771784c-582c-4b2a-b347-bcf9b2da5bc6",
+      "name": "Validate Job Title1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -7600,
+        15904
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Given the job title \"{{ $json.title }}\", determine the most appropriate department within a company. Respond with only the department name. Don't include \"Department\"; e.g. say Sales instead of Sales Department.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        -7376,
+        15904
+      ],
+      "id": "1ad0d06f-63e6-41ef-b8fa-cb3c8078ced2",
+      "name": "AI Department Classification1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "asRQcBy4x1zPzz02",
+          "name": "Anthropic account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Given the job title \"{{ $json.title }}\", evaluate this position's decision-making authority and relevance for data/analytics B2B sales on a scale of 1-10:\n\nChief data officer\t10\nHead of Data\t9\nData Governance Lead\t9\nData Architect\t8\nData Strategy Director\t8\nEnterprise Data Architect, Data Platform Lead\t7\nHead of Analytics\t7\nC-Level IT executives (CTO or CIO)\t6\nHead of IT\t5\nData Management Specialist\t4\nAnalysts and junior roles\t3\nEntry-level positions\t2\nIrrelevant roles\t1\n\nWe don’t want to see i.e.: If we are looking dor the \"data architect\" we don’t look for the \"Azure Data Architect\" we need the people who are kinda accountable for the data governance.\n\nRespond with ONLY a single number between 1-10. No explanation, no text, just the number."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        -7056,
+        15904
+      ],
+      "id": "863f721a-1768-42e2-bb75-f764d6de66e8",
+      "name": "AI Lead Scoring1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "asRQcBy4x1zPzz02",
+          "name": "Anthropic account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst groupedByCompany = {};\n\nitems.forEach(item => {\n  // Data z Google Sheets (už má všechno včetně Lead Score)\n  const domain = item.json['Company Domain'] || 'unknown';\n  const companyName = item.json['Company'] || domain;\n  const personName = item.json['Name'] || 'Unknown';\n  const leadScore = parseInt(item.json['Lead Score'] || '0') || 0;\n  \n  console.log(`Processing: ${companyName} - ${personName} - Score: ${leadScore}`);\n  \n  // Vyber nejlepší lead pro každou firmu\n  if (!groupedByCompany[domain] || groupedByCompany[domain].leadScore < leadScore) {\n    groupedByCompany[domain] = {\n      leadScore: leadScore,\n      companyName: companyName,\n      personName: personName,\n      data: item.json  // VŠECHNA data z Google Sheets\n    };\n  }\n});\n\n// Seřaď podle scoringu\nconst bestLeads = Object.values(groupedByCompany)\n  .sort((a, b) => b.leadScore - a.leadScore);\n\nconsole.log(`\\n=== VYBRANÉ NEJLEPŠÍ LEADY ===`);\nbestLeads.forEach(lead => {\n  console.log(`${lead.companyName}: ${lead.personName} (Score: ${lead.leadScore})`);\n});\nconsole.log(`Celkem firem: ${bestLeads.length}\\n`);\n\n// Vrať kompletní data o nejlepších leadech\nreturn bestLeads.map(entry => ({ json: entry.data }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6416,
+        15904
+      ],
+      "id": "c5235a7c-d030-42d7-b956-ff4f591ede16",
+      "name": "Select Top Lead Per Company"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 404191424,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=404191424",
+          "cachedResultName": "Contacts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "City": "={{ $('Validate Job Title1').item.json.city }}",
+            "Name": "={{ $('Validate Job Title1').item.json.name }}",
+            "State": "={{ $('Validate Job Title1').item.json.state }}",
+            "Company": "={{ $('Validate Job Title1').item.json.organization.name }}",
+            "Country": "={{ $('Validate Job Title1').item.json.country }}",
+            "Job Title": "={{ $('Validate Job Title1').item.json.title }}",
+            "Date Added": "={{ $now.toUTC().toFormat('yyyy-MM-dd') }}\n",
+            "Start Date": "={{ $('Validate Job Title1').item.json.employment_history[0].start_date }}",
+            "Company Domain": "={{ $('Validate Job Title1').item.json.organization.primary_domain }}",
+            "LinkedIn Profile URL": "={{ $('Validate Job Title1').item.json.linkedin_url }}",
+            "GPT Department Classification": "={{ $('AI Department Classification1').item.json.message.content }}",
+            "Lead Score": "={{ $json.content[0].text }}"
+          },
+          "matchingColumns": [
+            "LinkedIn Profile URL"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Name",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Title",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Job Title",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Start Date",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Start Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GPT Department Classification",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "GPT Department Classification",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn Profile URL",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "LinkedIn Profile URL",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Domain",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Company Domain",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "City",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "State",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "State",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Country",
+              "type": "string",
+              "display": true,
+              "removed": false,
+              "required": false,
+              "displayName": "Country",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email Address",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Verified",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Email Verified",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Added",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Date Added",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last Contacted Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Last Contacted Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Status",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Lead Status",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-Up Date",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Follow-Up Date",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "type": "string",
+              "display": true,
+              "required": false,
+              "displayName": "Lead Score",
+              "defaultMatch": false,
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "75f437e2-c2cd-47ac-9543-86c7936920bb",
+      "name": "Add Contacts3",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -6752,
+        15904
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Select only the best leads per comapny",
+        "height": 304,
+        "width": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6608,
+        15776
+      ],
+      "typeVersion": 1,
+      "id": "5c4a9d33-b6d4-4d53-8727-248642c8fbbb",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 NEW: APOLLO SEQUENCE INTEGRATION\n\nThis section creates contacts in Apollo and adds them to a sequence.\n\n### Required Setup:\n1. Replace YOUR_APOLLO_MASTER_API_KEY with your Apollo Master API key\n2. Replace YOUR_SEQUENCE_ID with your Apollo sequence ID\n3. Replace YOUR_EMAIL_ACCOUNT_ID with your Apollo mailbox ID\n\n### How to find these IDs:\n- Sequence ID: Go to Sequences in Apollo, click on your sequence, the ID is in the URL\n- Email Account ID: Use Apollo API endpoint GET /email_accounts to list all mailboxes\n- Master API Key: Settings > Integrations > API > Create Master Key",
+        "height": 2292,
+        "width": 3072,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3632,
+        15008
+      ],
+      "typeVersion": 1,
+      "id": "aaeddeb2-9fe1-4267-9bf0-6adb247b080a",
+      "name": "Sticky Note - Apollo Sequence Setup"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "filter-verified-email",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json['Email Verified'] }}",
+              "rightValue": "Yes"
+            },
+            {
+              "id": "filter-has-email",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json['Email Address'] }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3885ac1d-cc4d-453a-bb1c-590988bae382",
+      "name": "Filter Verified Emails Only",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -3056,
+        15824
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/contacts",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"first_name\": \"{{ $json['Name'].split(' ')[0] }}\",\n  \"last_name\": \"{{ $json['Name'].split(' ').slice(1).join(' ') }}\",\n  \"email\": \"{{ $json['Email Address'] }}\",\n  \"organization_name\": \"{{ $json['Company'] }}\",\n  \"title\": \"{{ $json['Job Title'] }}\",\n  \"city\": \"{{ $json['City'] || '' }}\",\n  \"state\": \"{{ $json['State'] || '' }}\",\n  \"country\": \"{{ $json['Country'] || '' }}\",\n  \"linkedin_url\": \"{{ $json['LinkedIn Profile URL'] || '' }}\",\n  \"run_dedupe\": true\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "465e9c3e-8370-44e4-ab4f-5e9460b105f9",
+      "name": "Create Apollo Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2832,
+        15824
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "ebbd6974-9b89-4c90-b98e-aabdf8be3ec7",
+      "name": "Loop Contacts (1 per batch - rate limit)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -3344,
+        15808
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {},
+      "id": "1ab66414-fc0d-4199-93aa-08db092af7d5",
+      "name": "Wait (Rate Limit)",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -800,
+        16992
+      ],
+      "webhookId": "apollo-rate-limit-wait",
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 404191424,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=404191424",
+          "cachedResultName": "Contacts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "LinkedIn Profile URL": "={{ $('Create Apollo Contact').item.json.body.contact.linkedin_url }}",
+            "Lead Status": "=in_sequence",
+            "Apollo Contact ID": "={{ $('Create Apollo Contact').item.json.body.contact.id }}",
+            "Sequence Added Date": "={{ $now.toUTC().toFormat('yyyy-MM-dd HH:mm:ss') }}"
+          },
+          "matchingColumns": [
+            "LinkedIn Profile URL"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Start Date",
+              "displayName": "Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "GPT Department Classification",
+              "displayName": "GPT Department Classification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile URL",
+              "displayName": "LinkedIn Profile URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Verified",
+              "displayName": "Email Verified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Contacted Date",
+              "displayName": "Last Contacted Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-Up Date",
+              "displayName": "Follow-Up Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile URL (using to match)",
+              "displayName": "LinkedIn Profile URL (using to match)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Apollo Contact ID",
+              "displayName": "Apollo Contact ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sequence Added Date",
+              "displayName": "Sequence Added Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "a8592b87-19a8-48a5-a85d-f92dee8cb7be",
+      "name": "Update Status: In Sequence",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -880,
+        15744
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-contact-created",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              },
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200
+            },
+            {
+              "id": "check-contact-created-2",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              },
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 300
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1c8213ca-f2c8-4e70-8e19-3ad412713f2b",
+      "name": "Contact Created Successfully?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2608,
+        15824
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM",
+          "mode": "list",
+          "cachedResultName": "Copy of Company Decision Maker Discovery",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TsaigYMJ_nlFguOmM7UvhtNvEqmDk9EnIp4bBtPVVcM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": 404191424,
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Nt7cBLwwIr7kRCj6VL3wQDqfkfbL3j_dwlHHpExrL_s/edit#gid=404191424",
+          "cachedResultName": "Contacts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "LinkedIn Profile URL": "={{ $('Filter Verified Emails Only').item.json['LinkedIn Profile URL'] }}",
+            "Lead Status": "=error_contact_creation"
+          },
+          "matchingColumns": [
+            "LinkedIn Profile URL"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Job Title",
+              "displayName": "Job Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Start Date",
+              "displayName": "Start Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "GPT Department Classification",
+              "displayName": "GPT Department Classification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile URL",
+              "displayName": "LinkedIn Profile URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Domain",
+              "displayName": "Company Domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Country",
+              "displayName": "Country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Verified",
+              "displayName": "Email Verified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Added",
+              "displayName": "Date Added",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Last Contacted Date",
+              "displayName": "Last Contacted Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Status",
+              "displayName": "Lead Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Follow-Up Date",
+              "displayName": "Follow-Up Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LinkedIn Profile URL (using to match)",
+              "displayName": "LinkedIn Profile URL (using to match)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Apollo Contact ID",
+              "displayName": "Apollo Contact ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sequence Added Date",
+              "displayName": "Sequence Added Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "102cf776-4c6d-4f43-8820-72b0fca49737",
+      "name": "Log Contact Creation Error",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        -2192,
+        16928
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Pn2GUzlXmmuAgNiD",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⚠️ IMPORTANT: API Key Requirements\n\nThe Apollo Add to Sequence endpoint requires a **MASTER API Key**, not a regular API key.\n\nTo create a Master API Key:\n1. Go to Apollo Settings\n2. Navigate to Integrations > API\n3. Click 'Create Master Key'\n\nWithout a Master Key, you will receive a 403 Forbidden error.",
+        "height": 536,
+        "width": 504,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3632,
+        14400
+      ],
+      "typeVersion": 1,
+      "id": "7a6b2fea-9769-416b-8cc7-3013261fca6d",
+      "name": "Sticky Note - API Key Warning"
+    },
+    {
+      "parameters": {
+        "content": "# Company Employees ICP Enrichment\núprava create apollo people 2 z 10 na 100, Loop OverBatch z 1000 na 100\n\n##  Job Title Validation\nFilters contacts based on whitelist:\n- Head of Data\n- Chief Data Officer  \n- Data Architect\n- Data Governance Lead\n- Head of Data & Analytics\n- Enterprise Data Architect\n- Data Management Specialist\n- Data Platform Lead\n- Data Strategy Director\n- CTO, CIO, Head of IT\n\nUses \"contains\" matching for flexibility.",
+        "height": 1520,
+        "width": 1040,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9008,
+        15280
+      ],
+      "id": "dca001ed-0667-457d-9c4b-98f4177408bc",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0165c486-1c9b-43aa-9ec3-9b487caaf7ef",
+      "name": "Loop Over Items (1 per Batch)2",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        -8912,
+        16128
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## Delete\n",
+        "height": 832,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7680,
+        15424
+      ],
+      "id": "7455ce57-8194-416a-b10d-0c02e90596a1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apollo.io/api/v1/emailer_campaigns/693ad3629ca6fe00218dfda0/add_contact_ids",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contact_ids\": [\"{{ $json.body.contact.id }}\"],\n  \"emailer_campaign_id\": \"69396ac123a7e30019968ba8\",\n  \"send_email_from_email_account_id\": \"YOUR_EMAIL_ACCOUNT_ID\",\n  \"sequence_no_email\": false,\n  \"sequence_active_in_other_campaigns\": false,\n  \"sequence_finished_in_other_campaigns\": false\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "ef92e32b-5bb8-4927-9b8b-6da7dc0fc4bf",
+      "name": "Add to Apollo Sequence_Nordics",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1664,
+        15232
+      ],
+      "typeVersion": 4.2,
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -4688,
+        15824
+      ],
+      "id": "eb98fb30-337a-40ba-90a9-a82cc81dccfc",
+      "name": "Wait",
+      "webhookId": "1b18a5cc-330e-4779-93e5-5e30db8fb5d2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09GNDM3DFA",
+          "mode": "list",
+          "cachedResultName": "dw-n8n-snitcher-outreach-wf"
+        },
+        "text": "New contacts added to de Apollo sequences",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -1424,
+        14496
+      ],
+      "id": "1bcb5e84-8bf0-47fa-9753-eee9f8602ddd",
+      "name": "Send a message",
+      "webhookId": "a29692ea-7013-4580-b997-e57073422305",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "9OZDdXhnfY0Jj3n3",
+          "name": "Slack account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4355bada-945a-4be0-96cc-28521ebcae2b",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Denmark",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "99650756-3420-4315-a299-b15b41f41161",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Iceland",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "7a638dc8-7e38-4417-9a7b-ed3fe1fc0e4c",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Sweden",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "5146253b-2a9e-4ad5-a2b3-89d1cdbc21c4",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Norway",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "9fcd5b60-cd92-455b-b9b2-e90de224b65c",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Finland",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2064,
+        15248
+      ],
+      "id": "ea30cc5f-5737-4a0e-a20b-4939d26b8993",
+      "name": "If Nordic Country"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d25d6124-3ccd-42e8-9487-fdf6a3d0c1f6",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "United State",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c742b268-4e7c-4cd2-8f81-985b6b414e56",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Canada",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2080,
+        15664
+      ],
+      "id": "682423ee-d81e-4423-a01a-cd8cb6f2790e",
+      "name": "If Country North America"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apollo.io/api/v1/emailer_campaigns/69245084ad72710019be6fb2/add_contact_ids",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contact_ids\": [\"{{ $json.body.contact.id }}\"],\n  \"emailer_campaign_id\": \"69245084ad72710019be6fb2\",\n  \"send_email_from_email_account_id\": \"693aa17f8168cb001dc95b90\",\n  \"sequence_no_email\": false,\n  \"sequence_active_in_other_campaigns\": false,\n  \"sequence_finished_in_other_campaigns\": false\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "b8fdabeb-7022-48ae-898f-6f4450310638",
+      "name": "Add to Apollo Sequence_Email_US",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1664,
+        15600
+      ],
+      "typeVersion": 4.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d25d6124-3ccd-42e8-9487-fdf6a3d0c1f6",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "United State",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "c742b268-4e7c-4cd2-8f81-985b6b414e56",
+              "leftValue": "={{ $json.Country }}",
+              "rightValue": "Canada",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2080,
+        16080
+      ],
+      "id": "ca248f9c-b418-43f9-906f-59cf9077cca0",
+      "name": "If Country Great Britain"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apollo.io/api/v1/emailer_campaigns/69245084ad72710019be6fb2/add_contact_ids",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contact_ids\": [\"{{ $json.body.contact.id }}\"],\n  \"emailer_campaign_id\": \"69245084ad72710019be6fb2\",\n  \"send_email_from_email_account_id\": \"6937dfd76064fe001dc47dbf\",\n  \"sequence_no_email\": false,\n  \"sequence_active_in_other_campaigns\": false,\n  \"sequence_finished_in_other_campaigns\": false\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "a4d38339-0b7e-4c0f-af6f-c707cbb0f4e9",
+      "name": "Add to Apollo Sequence_Email_GB",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1664,
+        16064
+      ],
+      "typeVersion": 4.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## Nordic KKo dawiso.com\n",
+        "height": 352,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        15152
+      ],
+      "id": "a9959cc0-c2c4-4712-943e-0d215b17bd21",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## North America MBa dawiso.us\n",
+        "height": 352,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        15536
+      ],
+      "id": "bfeaf108-d3c1-4b88-89a8-b8ea4496c83b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## United Kingdom MBa dawiso.uk.co\n",
+        "height": 352,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        15952
+      ],
+      "id": "68fa4846-29e9-4955-ae41-239f212d5814",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Everything else MBa dawiso.com\n",
+        "height": 352,
+        "width": 832,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2432,
+        16368
+      ],
+      "id": "39402bd5-c924-4671-b190-71101ade2323",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# Best ICP Email Enrichment\nThis will enrich the best ICP person’s email",
+        "height": 848,
+        "width": 1504,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6192,
+        15552
+      ],
+      "id": "6779c7fb-28b0-483a-9b87-f8900503fc94",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "# Perosnalized AI Icebreaker\n",
+        "height": 864,
+        "width": 912,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4624,
+        15536
+      ],
+      "id": "3a874a41-0f17-480f-b7ab-7c65c85d6926",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "#To-Do\nCo a kam dát hubspot?\nCo AI Personalizace\n",
+        "height": 144,
+        "width": 1328,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6128,
+        15104
+      ],
+      "id": "3e02539d-7995-4c84-b166-08213794c549",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apollo.io/api/v1/emailer_campaigns/69245084ad72710019be6fb2/add_contact_ids",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n    \"accept\": \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n    \"Content-Type\": \"application/json\",\n    \"x-api-key\": \"FLpgP9YuR65beAH6lqWBKQ\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contact_ids\": [\"{{ $json.body.contact.id }}\"],\n  \"emailer_campaign_id\": \"69245084ad72710019be6fb2\",\n  \"send_email_from_email_account_id\": \"693aa1f4706b2b000d9d37ca\",\n  \"sequence_no_email\": false,\n  \"sequence_active_in_other_campaigns\": false,\n  \"sequence_finished_in_other_campaigns\": false\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "eca60dfa-2af4-4b50-bdd4-3b4b2329376d",
+      "name": "Add to Apollo Sequence_com_email",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1664,
+        16480
+      ],
+      "typeVersion": 4.2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\nconst perPageParam = 'per_page=100';\n- je asi hodně, pak to háže výsledky jiných firem než které hledáme",
+        "height": 304,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8560,
+        16080
+      ],
+      "id": "903fe510-45b7-4830-8ff7-ddc16ebbe14b",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "**Kontrola Domény**\nJestli je domena emailu shodná se zadanou domenou firmy",
+        "height": 304,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8304,
+        15744
+      ],
+      "id": "0d8dbd97-0f78-4dc5-b515-ed27da83500e",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Získej všechny povolené domény ze zdrojového sheetu\nconst allowedDomains = $('Merge Rows Which Now All Contain Domains2').all()\n  .map(item => item.json.Domain?.toLowerCase().trim())\n  .filter(Boolean);\n\nconsole.log('Allowed domains:', allowedDomains);\nconsole.log('Total items to check:', items.length);\n\n// Vyfiltruj pouze lidi z povolených domén\nconst filteredItems = items.filter(item => {\n  const personDomain = item.json.organization?.primary_domain?.toLowerCase().trim();\n  const isAllowed = allowedDomains.includes(personDomain);\n  \n  console.log(`Person: ${item.json.name}, Domain: ${personDomain}, Allowed: ${isAllowed}`);\n  \n  return isAllowed;\n});\n\nconsole.log('Filtered items count:', filteredItems.length);\n\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8240,
+        15904
+      ],
+      "id": "c35ca5d9-b0fb-4422-8148-4f8f5f52c6c0",
+      "name": "Company Domain Check",
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Select Unprocessed Companies2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Select Unprocessed Companies2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo Organization Enrichment2": {
+      "main": [
+        [
+          {
+            "node": "Message a model4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Apollo People Search URL2": {
+      "main": [
+        [
+          {
+            "node": "Apollo Find Decision Makers2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo Find Decision Makers2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items (1 per Batch)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Contacts2": {
+      "main": [
+        []
+      ]
+    },
+    "Apollo Enrich Decision Makers2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items For Bulk Enrichment (10 per batch)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Apollo People Enrichment Payload2": {
+      "main": [
+        [
+          {
+            "node": "Apollo Enrich Decision Makers2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Contacts2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items For Bulk Enrichment (10 per batch)2": {
+      "main": [
+        [
+          {
+            "node": "Split Out Batched Enrichment Response2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Apollo People Enrichment Payload2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo Organization Search2": {
+      "main": [
+        [
+          {
+            "node": "Add Company Website2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Company Website2": {
+      "main": [
+        [
+          {
+            "node": "Approve Company Website2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Rows Which Now All Contain Domains2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Company Details2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items (1 per Batch)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Unprocessed Companies2": {
+      "main": [
+        [
+          {
+            "node": "Is Domain Already Provided?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Domain Already Provided?2": {
+      "main": [
+        [
+          {
+            "node": "Merge Rows Which Now All Contain Domains2",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Apollo Organization Search2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Batched Decision Maker Response2": {
+      "main": [
+        [
+          {
+            "node": "Company Domain Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Batched Enrichment Response2": {
+      "main": [
+        [
+          {
+            "node": "Enrich Contacts2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Rows Which Now All Contain Domains2": {
+      "main": [
+        [
+          {
+            "node": "Apollo Organization Enrichment2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model4": {
+      "main": [
+        [
+          {
+            "node": "Add Company Details2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Job Title1": {
+      "main": [
+        [
+          {
+            "node": "AI Department Classification1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Department Classification1": {
+      "main": [
+        [
+          {
+            "node": "AI Lead Scoring1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Lead Scoring1": {
+      "main": [
+        [
+          {
+            "node": "Add Contacts3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Top Lead Per Company": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items For Bulk Enrichment (10 per batch)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Contacts3": {
+      "main": [
+        [
+          {
+            "node": "Select Top Lead Per Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Verified Emails Only": {
+      "main": [
+        [
+          {
+            "node": "Create Apollo Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Apollo Contact": {
+      "main": [
+        [
+          {
+            "node": "Contact Created Successfully?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Contacts (1 per batch - rate limit)": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Verified Emails Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait (Rate Limit)": {
+      "main": [
+        [
+          {
+            "node": "Loop Contacts (1 per batch - rate limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status: In Sequence": {
+      "main": [
+        [
+          {
+            "node": "Wait (Rate Limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Created Successfully?": {
+      "main": [
+        [
+          {
+            "node": "If Nordic Country",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Contact Creation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Contact Creation Error": {
+      "main": [
+        [
+          {
+            "node": "Wait (Rate Limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items (1 per Batch)2": {
+      "main": [
+        [
+          {
+            "node": "Split Out Batched Decision Maker Response2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Apollo People Search URL2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Apollo Sequence_Nordics": {
+      "main": [
+        [
+          {
+            "node": "Update Status: In Sequence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Contacts (1 per batch - rate limit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Nordic Country": {
+      "main": [
+        [
+          {
+            "node": "Add to Apollo Sequence_Nordics",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Country North America",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Country North America": {
+      "main": [
+        [
+          {
+            "node": "Add to Apollo Sequence_Email_US",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Country Great Britain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Apollo Sequence_Email_US": {
+      "main": [
+        [
+          {
+            "node": "Update Status: In Sequence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Country Great Britain": {
+      "main": [
+        [
+          {
+            "node": "Add to Apollo Sequence_Email_GB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add to Apollo Sequence_com_email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Apollo Sequence_Email_GB": {
+      "main": [
+        [
+          {
+            "node": "Update Status: In Sequence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Apollo Sequence_com_email": {
+      "main": [
+        [
+          {
+            "node": "Update Status: In Sequence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Company Domain Check": {
+      "main": [
+        [
+          {
+            "node": "Validate Job Title1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9440e88dbde8720e84606d325d4456fb242aab9534edd7e7d2613fe3ebda64a6"
+  }
+}
